@@ -34,16 +34,40 @@ def path(tmp_path_factory):
 
 
 @pytest.mark.asyncio
-async def test_faiss(path):
-    ds = Datasette(path)
+@pytest.mark.parametrize(
+    "sql,expected",
+    (
+        (
+            "select faiss_search('demo', 'embeddings', faiss_encode('[1, 2, 3]'), 2) as results",
+            "[1, 2]",
+        ),
+        (
+            "select faiss_search_with_scores('demo', 'embeddings', faiss_encode('[1, 2, 3]'), 2) as results",
+            "[[1, 0.25], [2, 30.25]]",
+        ),
+        (
+            "select faiss_encode('[1, 2, 3]') as results",
+            {"$base64": True, "encoded": "AACAPwAAAEAAAEBA"},
+        ),
+        (
+            "select faiss_decode(faiss_encode('[1, 2, 3]')) as results",
+            "[1.0, 2.0, 3.0]",
+        ),
+    ),
+)
+async def test_faiss(path, sql, expected):
+    ds = Datasette(
+        [path],
+        metadata={"plugins": {"datasette-faiss": {"tables": [["demo", "embeddings"]]}}},
+    )
     await ds.invoke_startup()
     response = await ds.client.get(
         "/demo.json?"
         + urllib.parse.urlencode(
             {
                 "_shape": "array",
-                "sql": "select faiss_search_with_scores('embeddings', faiss_encode('[1, 2, 3]'), 2) as results",
+                "sql": sql,
             }
         )
     )
-    assert False
+    assert response.json()[0]["results"] == expected
