@@ -5,7 +5,7 @@
 [![Tests](https://github.com/simonw/datasette-faiss/workflows/Test/badge.svg)](https://github.com/simonw/datasette-faiss/actions?query=workflow%3ATest)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/simonw/datasette-faiss/blob/main/LICENSE)
 
-Maintain a FAISS index for specified Datasette tables
+Maintain a [FAISS index](https://github.com/facebookresearch/faiss) for specified Datasette tables
 
 See [Semantic search answers: Q&A against documentation with GPT3 + OpenAI embeddings](https://simonwillison.net/2023/Jan/13/semantic-search-answers/) for background on this project.
 
