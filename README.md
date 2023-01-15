@@ -17,7 +17,7 @@ Install this plugin in the same environment as Datasette.
 
 ## Usage
 
-This plugin creates in-memory FAISS indexes for specified tables on startup.
+This plugin creates in-memory FAISS indexes for specified tables on startup, using an `IndexFlatL2` [FAISS index type](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes).
 
 If the tables are modified after the server has started the indexes will not (yet) pick up those changes.
 
