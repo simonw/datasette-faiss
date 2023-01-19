@@ -42,6 +42,8 @@ def prepare_connection(conn):
     conn.create_function("faiss_search_with_scores", 4, faiss_search_with_scores)
     conn.create_function("faiss_encode", 1, lambda s: encode(json.loads(s)))
     conn.create_function("faiss_decode", 1, lambda b: json.dumps(decode(b)))
+    conn.create_aggregate("faiss_agg", 4, FaissAgg)
+    conn.create_aggregate("faiss_agg_with_scores", 4, FaissAggWithScores)
 
 
 async def populate_index(datasette, database, table):
@@ -65,3 +67,37 @@ def decode(blob):
 
 def encode(vector):
     return struct.pack("f" * len(vector), *vector)
+
+
+class FaissAgg:
+    with_scores = False
+
+    def __init__(self):
+        self.ids = []
+        self.embeddings = []
+        self.compare_embedding = None
+        self.k = None
+        self.first = True
+
+    def step(self, id, embedding, compare_embedding, k):
+        if self.first:
+            self.first = False
+            self.compare_embedding = decode(compare_embedding)
+            self.k = k
+        self.ids.append(id)
+        self.embeddings.append(decode(embedding))
+
+    def finalize(self):
+        index = faiss.IndexFlatL2(len(self.compare_embedding))
+        index.add(np.array(self.embeddings))
+        D, I = index.search(np.array([self.compare_embedding]), self.k)
+        if self.with_scores:
+            return json.dumps(
+                [(self.ids[i], d) for i, d in zip(I[0], D[0])], default=float
+            )
+        else:
+            return json.dumps([self.ids[i] for i in I[0]])
+
+
+class FaissAggWithScores(FaissAgg):
+    with_scores = True

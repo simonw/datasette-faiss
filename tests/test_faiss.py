@@ -71,3 +71,33 @@ async def test_faiss(path, sql, expected):
         )
     )
     assert response.json()[0]["results"] == expected
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "fn,input,expected",
+    (
+        ("faiss_agg", "[1, 2, 3]", "[1, 2]"),
+        ("faiss_agg", "[4, 5, 6]", "[2, 1]"),
+        ("faiss_agg_with_scores", "[1, 2, 3]", "[[1, 0.25], [2, 30.25]]"),
+        ("faiss_agg_with_scores", "[4, 5, 6]", "[[2, 0.25], [1, 24.25]]"),
+    ),
+)
+async def test_faiss_agg(path, fn, input, expected):
+    ds = Datasette(
+        [path],
+        metadata={"plugins": {"datasette-faiss": {"tables": [["demo", "embeddings"]]}}},
+    )
+    await ds.invoke_startup()
+    sql = f"select {fn}(id, embedding, faiss_encode(:embedding), 2) as results from embeddings"
+    response = await ds.client.get(
+        "/demo.json?"
+        + urllib.parse.urlencode(
+            {
+                "_shape": "array",
+                "sql": sql,
+                "embedding": input,
+            }
+        )
+    )
+    assert response.json()[0]["results"] == expected

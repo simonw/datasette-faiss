@@ -127,6 +127,34 @@ Returns:
 ```
 Note that floating point arithmetic results in numbers that don't quite round-trip to the exact same expected value.
 
+#### faiss_agg(id, embedding, compare_embedding, k)
+
+This aggregate function can be used to find the `k` nearest neighbors to `compare_embedding` for each unique value of `id` in the table. For example:
+
+```sql
+select faiss_agg(
+    id, embedding, (select embedding from embeddings where id = 3), 5
+) from embeddings
+```
+Unlike the `faiss_search()` function, this does not depend on the per-table index that the plugin creates when it first starts running. Instead, an index is built every time the aggregation function is run.
+
+This means that it should only be used on smaller sets of values - once you get above 10,000 or so the performance from this function is likely to become prohibitively expensive.
+
+The function returns a JSON array of IDs representing the `k` rows with the closest distance scores, like this:
+
+```json
+[1324, 344, 5562, 553, 2534]
+```
+You can use the `json_each()` function to turn that into a table-like sequence that you can join against.
+
+#### faiss_agg_with_scores(id, embedding, compare_embedding, k)
+
+This is similar to the `faiss_agg()` aggregate function but it returns a list of pairs, each with an ID and the corresponding score - something that looks like this (if `k` was 2):
+
+```json
+[[2412, 0.25], [1245, 24.25]]
+```
+
 ## Development
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:
