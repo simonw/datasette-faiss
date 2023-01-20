@@ -147,6 +147,8 @@ The function returns a JSON array of IDs representing the `k` rows with the clos
 ```
 You can use the `json_each()` function to turn that into a table-like sequence that you can join against.
 
+[Try an example fais_agg() query](https://datasette.simonwillison.net/simonwillisonblog?sql=with+last_500+as+%28%0D%0A++select%0D%0A++++id%2C%0D%0A++++embedding%0D%0A++from%0D%0A++++blog_entry_embeddings%0D%0A++order+by%0D%0A++++id+desc%0D%0A++limit%0D%0A++++500%0D%0A%29%2C+faiss+as+%28%0D%0A++select%0D%0A++++faiss_agg%28%0D%0A++++++id%2C%0D%0A++++++embedding%2C%0D%0A++++++%28%0D%0A++++++++select%0D%0A++++++++++embedding%0D%0A++++++++from%0D%0A++++++++++blog_entry_embeddings%0D%0A++++++++where%0D%0A++++++++++id+%3D+%3Aid%0D%0A++++++%29%2C%0D%0A++++++10%0D%0A++++%29+as+results%0D%0A++from%0D%0A++++last_500%0D%0A%29%2C%0D%0Aids+as+%28%0D%0A++select%0D%0A++++value+as+id%0D%0A++from%0D%0A++++json_each%28faiss.results%29%2C%0D%0A++++faiss%0D%0A%29%0D%0Aselect%0D%0A++blog_entry.id%2C%0D%0A++blog_entry.title%2C%0D%0A++blog_entry.created%0D%0Afrom%0D%0A++ids%0D%0A++join+blog_entry+on+ids.id+%3D+blog_entry.id&id=8214).
+
 #### faiss_agg_with_scores(id, embedding, compare_embedding, k)
 
 This is similar to the `faiss_agg()` aggregate function but it returns a list of pairs, each with an ID and the corresponding score - something that looks like this (if `k` was 2):
@@ -154,6 +156,7 @@ This is similar to the `faiss_agg()` aggregate function but it returns a list of
 ```json
 [[2412, 0.25], [1245, 24.25]]
 ```
+[Try an example fais_agg_with_scores() query](https://datasette.simonwillison.net/simonwillisonblog?sql=with+last_500+as+%28%0D%0A++select%0D%0A++++id%2C%0D%0A++++embedding%0D%0A++from%0D%0A++++blog_entry_embeddings%0D%0A++order+by%0D%0A++++id+desc%0D%0A++limit%0D%0A++++500%0D%0A%29%2C+ids_and_scores+as+%28%0D%0A++select%0D%0A++++faiss_agg_with_scores%28%0D%0A++++++id%2C%0D%0A++++++embedding%2C%0D%0A++++++%28%0D%0A++++++++select%0D%0A++++++++++embedding%0D%0A++++++++from%0D%0A++++++++++blog_entry_embeddings%0D%0A++++++++where%0D%0A++++++++++id+%3D+%3Aid%0D%0A++++++%29%2C+10%0D%0A++++%29+as+s%0D%0A++from%0D%0A++++last_500%0D%0A%29%2C%0D%0Aresults+as+%28%0D%0A++select%0D%0A++++json_extract%28value%2C+%27%24%5B0%5D%27%29+as+id%2C%0D%0A++++json_extract%28value%2C+%27%24%5B1%5D%27%29+as+score%0D%0A++from%0D%0A++++json_each%28ids_and_scores.s%29%2C%0D%0A++++ids_and_scores%0D%0A%29%0D%0Aselect%0D%0A++results.score%2C%0D%0A++blog_entry.id%2C%0D%0A++blog_entry.title%2C%0D%0A++blog_entry.created%0D%0Afrom%0D%0A++results%0D%0A++join+blog_entry+on+results.id+%3D+blog_entry.id&id=8214).
 
 ## Development
 
