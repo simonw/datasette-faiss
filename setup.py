@@ -32,7 +32,7 @@ setup(
     version=VERSION,
     packages=["datasette_faiss"],
     entry_points={"datasette": ["faiss = datasette_faiss"]},
-    install_requires=["datasette", "faiss-cpu", "numpy"],
+    install_requires=["datasette", "faiss-cpu", "numpy>=1.0,<2.0"],
     extras_require={"test": ["pytest", "pytest-asyncio"]},
     python_requires=">=3.7",
 )
