@@ -12,9 +12,9 @@ See [Semantic search answers: Q&A against documentation with GPT3 + OpenAI embed
 ## Installation
 
 Install this plugin in the same environment as Datasette.
-
-    datasette install datasette-faiss
-
+```bash
+datasette install datasette-faiss
+```
 ## Usage
 
 This plugin creates in-memory FAISS indexes for specified tables on startup, using an `IndexFlatL2` [FAISS index type](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes).
@@ -161,15 +161,16 @@ This is similar to the `faiss_agg()` aggregate function but it returns a list of
 ## Development
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:
-
-    cd datasette-faiss
-    python3 -m venv venv
-    source venv/bin/activate
-
+```bash
+cd datasette-faiss
+python3 -m venv venv
+source venv/bin/activate
+```
 Now install the dependencies and test dependencies:
-
-    pip install -e '.[test]'
-
+```bash
+pip install -e '.[test]'
+```
 To run the tests:
-
-    pytest
+```bash
+pytest
+```
